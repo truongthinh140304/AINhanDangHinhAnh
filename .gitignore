@@ -1,0 +1,147 @@
+# ============================================
+# GITIGNORE - Full Stack Project
+# ============================================
+
+# ===== BACKEND (Python) =====
+
+# Virtual Environment
+backend/venv/
+backend/env/
+backend/.env
+backend/.venv
+
+# Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+backend/.Python
+
+# PyTorch/ML Models (too large for git)
+backend/*.pt
+backend/*.pth
+backend/*.onnx
+backend/*.h5
+
+# Uploads & Temp files
+backend/uploads/
+backend/temp/
+backend/data/anh_mau/*.jpg
+backend/data/anh_mau/*.png
+
+# Logs
+backend/*.log
+backend/logs/
+
+# Database
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# IDE
+backend/.idea/
+backend/.vscode/
+backend/*.swp
+backend/*.swo
+
+# ===== FRONTEND (Flutter) =====
+
+# Flutter/Dart
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
+
+# Android
+frontend/android/.gradle/
+frontend/android/.idea/
+frontend/android/local.properties
+frontend/android/app/debug/
+frontend/android/app/profile/
+frontend/android/app/release/
+frontend/android/gradle/
+frontend/android/gradlew
+frontend/android/gradlew.bat
+frontend/android/.gradle/
+frontend/android/captures/
+frontend/android/key.properties
+frontend/android/*.jks
+frontend/android/*.keystore
+
+# iOS
+frontend/ios/Flutter/Generated.xcconfig
+frontend/ios/Flutter/Flutter.framework
+frontend/ios/Flutter/Flutter.podspec
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+frontend/ios/Runner.xcworkspace/
+frontend/ios/.generated/
+frontend/ios/Flutter/App.framework
+frontend/ios/Flutter/Flutter.framework
+frontend/ios/ServiceDefinitions.json
+frontend/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+frontend/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Web
+frontend/web/
+
+# Windows
+frontend/windows/flutter/generated_plugin_registrant.cc
+frontend/windows/flutter/generated_plugin_registrant.h
+
+# Linux
+frontend/linux/flutter/generated_plugin_registrant.cc
+frontend/linux/flutter/generated_plugin_registrant.h
+
+# IDE
+frontend/.vscode/
+frontend/.idea/
+
+# ===== COMMON =====
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp
+temp/
+tmp/
+*.tmp
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Large files
+*.mp4
+*.avi
+*.mov
+
+# Secrets
+secrets/
+*.pem
+*.key
+*.cert
+

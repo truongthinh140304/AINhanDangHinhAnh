@@ -1,0 +1,164 @@
+╔══════════════════════════════════════════════════════════════╗
+║     HƯỚNG DẪN CÀI ĐẶT VÀ SỬ DỤNG ỨNG DỤNG NHẬN DẠNG        ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 YÊU CẦU HỆ THỐNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Python 3.8 trở lên
+✓ RAM: Tối thiểu 4GB (Khuyến nghị 8GB)
+✓ Dung lượng trống: 2GB
+✓ Kết nối Internet (lần đầu chạy để tải mô hình)
+
+═══════════════════════════════════════════════════════════════
+
+📦 BƯỚC 1: CÀI ĐẶT PYTHON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Truy cập: https://www.python.org/downloads/
+2. Tải Python 3.8 trở lên
+3. Khi cài đặt, NHỚ tích chọn "Add Python to PATH"
+4. Kiểm tra cài đặt:
+   
+   Mở Command Prompt/Terminal, gõ:
+   python --version
+   
+   Nếu hiển thị "Python 3.x.x" là thành công
+
+═══════════════════════════════════════════════════════════════
+
+📚 BƯỚC 2: CÀI ĐẶT THƯ VIỆN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Mở Command Prompt/Terminal
+
+2. Di chuyển đến thư mục dự án:
+   cd D:\AInhandanghinhanh
+
+3. Cài đặt các thư viện:
+   pip install -r requirements.txt
+
+4. Đợi quá trình cài đặt hoàn tất (5-10 phút)
+
+QUAN TRỌNG:
+- Nếu gặp lỗi, thử: python -m pip install --upgrade pip
+- Nếu dùng MacOS/Linux, có thể cần: pip3 thay vì pip
+
+═══════════════════════════════════════════════════════════════
+
+🚀 BƯỚC 3: CHẠY ỨNG DỤNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Trong Command Prompt/Terminal, gõ:
+   python app_nhan_dang.py
+
+2. Lần đầu chạy sẽ tải mô hình YOLOv8 (khoảng 6MB)
+
+3. Sau đó giao diện sẽ hiện ra
+
+═══════════════════════════════════════════════════════════════
+
+🎯 BƯỚC 4: SỬ DỤNG ỨNG DỤNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bước 1: Chọn Ảnh
+   • Nhấn nút "📂 Chọn Ảnh"
+   • Chọn file ảnh từ máy tính (JPG, PNG, BMP, GIF)
+   • Ảnh sẽ hiển thị bên trái
+
+Bước 2: Nhận Dạng
+   • Nhấn nút "🔍 Nhận Dạng"
+   • Đợi 1-3 giây để xử lý
+   • Kết quả hiển thị bên phải
+
+Bước 3: Xem Kết Quả
+   • Số người nam/nữ
+   • Màu áo của từng người
+   • Thời tiết/phong cảnh
+   • Các vật dụng phát hiện được
+
+Bước 4: Lưu Kết Quả (Tùy chọn)
+   • Nhấn nút "💾 Lưu Kết Quả"
+   • Chọn vị trí lưu file
+   • Ảnh với khung nhận dạng sẽ được lưu
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ XỬ LÝ SỰ CỐ THƯỜNG GẶP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Lỗi: "ModuleNotFoundError: No module named 'xxx'"
+
+   ✅ Giải pháp:
+   pip install tên-module-bị-thiếu
+
+
+❌ Lỗi: "Không thể tải mô hình YOLO"
+
+   ✅ Giải pháp:
+   - Kiểm tra kết nối Internet
+   - Chạy lại ứng dụng
+   - Mô hình sẽ tự động tải về
+
+
+❌ Ứng dụng chạy chậm
+
+   ✅ Giải pháp:
+   - Giảm kích thước ảnh input
+   - Đóng các ứng dụng khác
+   - Nếu có GPU NVIDIA, cài đặt CUDA
+
+
+❌ Lỗi: "tkinter not found"
+
+   ✅ Giải pháp Windows:
+   Tkinter đã có sẵn trong Python
+
+   ✅ Giải pháp Linux:
+   sudo apt-get install python3-tk
+
+   ✅ Giải pháp MacOS:
+   brew install python-tk
+
+
+❌ Độ chính xác không cao
+
+   ✅ Giải pháp:
+   - Sử dụng ảnh có độ phân giải cao
+   - Đảm bảo ảnh rõ nét
+   - Ánh sáng tốt
+   - Người/vật không bị che khuất
+
+═══════════════════════════════════════════════════════════════
+
+💡 MẸO SỬ DỤNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Sử dụng ảnh có độ phân giải 640x640 đến 1920x1080 cho kết quả tốt nhất
+
+✓ Ảnh nên có ánh sáng tốt, không bị mờ
+
+✓ Người trong ảnh nên đứng thẳng, không bị che khuất
+
+✓ Màu áo rõ ràng, không bị nhòe
+
+✓ Vật dụng cần phát hiện nên lớn hơn 5% kích thước ảnh
+
+✓ Nếu có nhiều người, đảm bảo không chồng chéo quá nhiều
+
+═══════════════════════════════════════════════════════════════
+
+📞 HỖ TRỢ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nếu gặp vấn đề, hãy:
+
+1. Đọc lại hướng dẫn cẩn thận
+2. Kiểm tra file README.md
+3. Xem file PHAN_TICH_THUAT_TOAN.md để hiểu rõ hơn
+4. Tạo Issue trên GitHub
+
+═══════════════════════════════════════════════════════════════
+
+🎉 CHÚC BẠN SỬ DỤNG THÀNH CÔNG!
+

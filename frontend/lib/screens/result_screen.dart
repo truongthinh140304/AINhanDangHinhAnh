@@ -15,13 +15,13 @@ class ResultScreen extends StatelessWidget {
       body: Consumer<RecognitionProvider>(
         builder: (context, provider, child) {
           final result = provider.currentResult;
-          
+
           if (result == null) {
             return const Center(
               child: Text('Không có kết quả'),
             );
           }
-          
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -55,9 +55,9 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Số người
                 _buildSection(
                   icon: Icons.person,
@@ -70,7 +70,7 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Giới tính
                 if (result.genders.isNotEmpty) ...[
                   _buildSection(
@@ -80,14 +80,13 @@ class ResultScreen extends StatelessWidget {
                       children: result.genders.map((gender) {
                         return ListTile(
                           leading: Icon(
-                            gender.gender == 'Nam' 
-                                ? Icons.man 
-                                : Icons.woman,
+                            gender.gender == 'Nam' ? Icons.man : Icons.woman,
                             color: gender.gender == 'Nam'
                                 ? Colors.blue
                                 : Colors.pink,
                           ),
-                          title: Text('Người ${gender.personId}: ${gender.gender}'),
+                          title: Text(
+                              'Người ${gender.personId}: ${gender.gender}'),
                           trailing: Text(
                             '${(gender.confidence * 100).toStringAsFixed(0)}%',
                             style: const TextStyle(
@@ -99,7 +98,7 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                
+
                 // Màu áo
                 if (result.colors.isNotEmpty) ...[
                   _buildSection(
@@ -117,7 +116,8 @@ class ResultScreen extends StatelessWidget {
                               border: Border.all(color: Colors.grey),
                             ),
                           ),
-                          title: Text('Người ${color.personId}: ${color.color}'),
+                          title:
+                              Text('Người ${color.personId}: ${color.color}'),
                           trailing: Text(
                             '${(color.confidence * 100).toStringAsFixed(0)}%',
                             style: const TextStyle(
@@ -129,7 +129,7 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                
+
                 // Thời tiết
                 if (result.weather != null) ...[
                   _buildSection(
@@ -155,7 +155,7 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                
+
                 // Vật dụng
                 if (result.objects.isNotEmpty) ...[
                   _buildSection(
@@ -181,9 +181,9 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Buttons
                 Row(
                   children: [
@@ -261,11 +261,14 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Color _hexToColor(String hexString) {
+  Color? _hexToColor(String hexString) {
     final buffer = StringBuffer();
     if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
     buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
+    try {
+      return Color(int.parse(buffer.toString(), radix: 16));
+    } catch (e) {
+      return null; // Return null if parsing fails
+    }
   }
 }
-

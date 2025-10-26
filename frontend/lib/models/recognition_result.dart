@@ -4,7 +4,7 @@ class RecognitionResult {
   final String imageUrl;
   final int peopleCount;
   final List<Gender> genders;
-  final List<Color> colors;
+  final List<CustomColor> colors;
   final Weather? weather;
   final List<DetectedObject> objects;
   final double processingTime;
@@ -29,18 +29,19 @@ class RecognitionResult {
       transactionId: json['transaction_id'] ?? '',
       imageUrl: json['image_url'] ?? '',
       peopleCount: json['people_count'] ?? 0,
-      genders: (json['genders'] as List?)
-          ?.map((e) => Gender.fromJson(e))
-          .toList() ?? [],
+      genders:
+          (json['genders'] as List?)?.map((e) => Gender.fromJson(e)).toList() ??
+              [],
       colors: (json['colors'] as List?)
-          ?.map((e) => Color.fromJson(e))
-          .toList() ?? [],
-      weather: json['weather'] != null 
-          ? Weather.fromJson(json['weather']) 
-          : null,
+              ?.map((e) => CustomColor.fromJson(e))
+              .toList() ??
+          [],
+      weather:
+          json['weather'] != null ? Weather.fromJson(json['weather']) : null,
       objects: (json['objects'] as List?)
-          ?.map((e) => DetectedObject.fromJson(e))
-          .toList() ?? [],
+              ?.map((e) => DetectedObject.fromJson(e))
+              .toList() ??
+          [],
       processingTime: (json['processing_time'] ?? 0).toDouble(),
       timestamp: json['timestamp'] ?? '',
       status: json['status'] ?? 'unknown',
@@ -93,21 +94,21 @@ class Gender {
 }
 
 /// Model màu sắc
-class Color {
+class CustomColor {
   final int personId;
   final String color;
   final String hex;
   final double confidence;
 
-  Color({
+  CustomColor({
     required this.personId,
     required this.color,
     required this.hex,
     required this.confidence,
   });
 
-  factory Color.fromJson(Map<String, dynamic> json) {
-    return Color(
+  factory CustomColor.fromJson(Map<String, dynamic> json) {
+    return CustomColor(
       personId: json['person_id'] ?? 0,
       color: json['color'] ?? 'Không xác định',
       hex: json['hex'] ?? '#000000',
@@ -182,4 +183,3 @@ class DetectedObject {
     };
   }
 }
-

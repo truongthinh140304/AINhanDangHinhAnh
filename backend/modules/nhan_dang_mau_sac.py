@@ -155,3 +155,76 @@ class NhanDangMauSac:
             'phuong_phap': 'K-Means Clustering'
         }
 
+
+# ============================================================================
+# FUNCTION CHO API - Wrapper để dễ sử dụng
+# ============================================================================
+
+def nhan_dang_mau_ao(anh_path_or_array, ket_qua_nguoi):
+    """
+    Nhận dạng màu áo cho tất cả người trong ảnh
+    
+    Args:
+        anh_path_or_array: Đường dẫn ảnh hoặc numpy array
+        ket_qua_nguoi: List các bounding box người
+                      Format: [{"bbox": [x1, y1, x2, y2], ...}, ...]
+    
+    Returns:
+        List[dict]: Kết quả màu áo cho từng người
+        [
+            {
+                "person_id": 1,
+                "color": "Xanh dương",
+                "hex": "#0000FF",
+                "confidence": float,
+                "bbox": [x1, y1, x2, y2]
+            },
+            ...
+        ]
+    """
+    try:
+        # Load ảnh
+        if isinstance(anh_path_or_array, str):
+            anh = cv2.imread(anh_path_or_array)
+            if anh is None:
+                raise ValueError(f"Không thể đọc ảnh: {anh_path_or_array}")
+        else:
+            anh = anh_path_or_array
+        
+        # Khởi tạo module
+        nhan_dang = NhanDangMauSac()
+        
+        # Kết quả
+        ket_qua = []
+        
+        # Xử lý từng người
+        for idx, nguoi in enumerate(ket_qua_nguoi):
+            bbox = nguoi.get("bbox", [])
+            if len(bbox) != 4:
+                continue
+            
+            x1, y1, x2, y2 = map(int, bbox)
+            
+            # Nhận dạng màu
+            ten_mau = nhan_dang.nhan_dang_mau_ao(anh, x1, y1, x2, y2)
+            rgb = nhan_dang.lay_mau_rgb(ten_mau)
+            
+            # Convert RGB to HEX
+            hex_color = "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+            
+            # Độ tin cậy (ước lượng)
+            confidence = 0.85 if ten_mau != "Không xác định" else 0.3
+            
+            ket_qua.append({
+                "person_id": idx + 1,
+                "color": ten_mau,
+                "hex": hex_color,
+                "confidence": round(confidence, 2),
+                "bbox": [x1, y1, x2, y2]
+            })
+        
+        return ket_qua
+        
+    except Exception as e:
+        print(f"❌ Lỗi nhận dạng màu áo: {e}")
+        return []

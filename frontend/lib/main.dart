@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'services/api_service.dart';
 import 'providers/recognition_provider.dart';
+import 'config/api_config.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       providers: [
         // API Service
         Provider<ApiService>(
-          create: (_) => ApiService(baseUrl: 'http://localhost:8000'),
+          create: (_) => ApiService(baseUrl: ApiConfig.baseUrl),
         ),
         
         // Recognition Provider

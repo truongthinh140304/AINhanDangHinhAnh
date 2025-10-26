@@ -240,3 +240,73 @@ class NhanDangVatDung:
         
         return mo_ta
 
+
+# ============================================================================
+# FUNCTION CHO API - Wrapper để dễ sử dụng
+# ============================================================================
+
+def nhan_dang_vat_dung(anh_path_or_array, ket_qua_yolo=None):
+    """
+    Nhận dạng vật dụng từ ảnh (sử dụng YOLO hoặc mock data)
+    
+    Args:
+        anh_path_or_array: Đường dẫn ảnh hoặc numpy array
+        ket_qua_yolo: (Optional) Kết quả từ YOLO model
+                     Format: [{"class": str, "confidence": float, "bbox": [x1,y1,x2,y2]}, ...]
+    
+    Returns:
+        List[dict]: Kết quả nhận dạng vật dụng
+        [
+            {
+                "object_class": "backpack",
+                "ten_tieng_viet": "Ba lô",
+                "confidence": float,
+                "bbox": [x1, y1, x2, y2],
+                "category": "Đồ dùng cá nhân"
+            },
+            ...
+        ]
+    """
+    try:
+        # Load ảnh
+        if isinstance(anh_path_or_array, str):
+            anh = cv2.imread(anh_path_or_array)
+            if anh is None:
+                raise ValueError(f"Không thể đọc ảnh: {anh_path_or_array}")
+        else:
+            anh = anh_path_or_array
+        
+        # Khởi tạo module
+        module = NhanDangVatDung()
+        
+        # Kết quả
+        ket_qua = []
+        
+        # Nếu có kết quả YOLO
+        if ket_qua_yolo and len(ket_qua_yolo) > 0:
+            for item in ket_qua_yolo:
+                ten_class = item.get("class", "unknown")
+                
+                # Bỏ qua person (đã xử lý riêng)
+                if ten_class.lower() == "person":
+                    continue
+                
+                ten_viet = module.dich_sang_tieng_viet(ten_class)
+                nhom = module.phan_loai_vat_dung(ten_class)
+                
+                ket_qua.append({
+                    "object_class": ten_class,
+                    "ten_tieng_viet": ten_viet,
+                    "confidence": round(item.get("confidence", 0.0), 2),
+                    "bbox": item.get("bbox", [0, 0, 0, 0]),
+                    "category": nhom
+                })
+        
+        # Nếu không có kết quả YOLO, return empty
+        # (Production: integrate với YOLO model thực tế)
+        
+        return ket_qua
+        
+    except Exception as e:
+        print(f"❌ Lỗi nhận dạng vật dụng: {e}")
+        return []

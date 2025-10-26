@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Database Configuration và Session Management
 Sử dụng SQLAlchemy ORM với PostgreSQL
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
@@ -69,12 +70,12 @@ def check_database_connection() -> bool:
     try:
         # Thử tạo session và query đơn giản
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
-        print("✅ Database connection successful!")
+        print("[OK] Database connection successful!")
         return True
     except Exception as e:
-        print(f"❌ Database connection failed: {str(e)}")
+        print(f"[X] Database connection failed: {str(e)}")
         return False
 
 # Hàm tạo tables
@@ -85,19 +86,19 @@ def create_tables():
     """
     try:
         Base.metadata.create_all(bind=engine)
-        print("✅ All tables created successfully!")
+        print("[OK] All tables created successfully!")
     except Exception as e:
-        print(f"❌ Error creating tables: {str(e)}")
+        print(f"[X] Error creating tables: {str(e)}")
 
 # Hàm xóa tất cả tables (cẩn thận!)
 def drop_tables():
     """
     XÓA tất cả tables trong database
-    ⚠️ CẢNH BÁO: Chỉ dùng cho development!
+    [!] CANH BAO: Chi dung cho development!
     """
     try:
         Base.metadata.drop_all(bind=engine)
-        print("✅ All tables dropped!")
+        print("[OK] All tables dropped!")
     except Exception as e:
-        print(f"❌ Error dropping tables: {str(e)}")
+        print(f"[X] Error dropping tables: {str(e)}")
 

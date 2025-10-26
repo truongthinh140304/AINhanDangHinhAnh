@@ -120,3 +120,74 @@ class NhanDangGioiTinh:
             }
         }
 
+
+# ============================================================================
+# FUNCTION CHO API - Wrapper để dễ sử dụng
+# ============================================================================
+
+def nhan_dang_gioi_tinh_tu_anh(anh_path_or_array, ket_qua_nguoi):
+    """
+    Nhận dạng giới tính cho tất cả người trong ảnh
+    
+    Args:
+        anh_path_or_array: Đường dẫn ảnh hoặc numpy array
+        ket_qua_nguoi: List các bounding box người từ YOLO
+                      Format: [{"bbox": [x1, y1, x2, y2], "confidence": float}, ...]
+    
+    Returns:
+        List[dict]: Kết quả giới tính cho từng người
+        [
+            {
+                "person_id": 1,
+                "gender": "male" / "female",
+                "confidence": float,
+                "bbox": [x1, y1, x2, y2]
+            },
+            ...
+        ]
+    """
+    try:
+        # Load ảnh nếu là đường dẫn
+        if isinstance(anh_path_or_array, str):
+            anh = cv2.imread(anh_path_or_array)
+            if anh is None:
+                raise ValueError(f"Không thể đọc ảnh: {anh_path_or_array}")
+        else:
+            anh = anh_path_or_array
+        
+        # Khởi tạo module
+        nhan_dang = NhanDangGioiTinh()
+        
+        # Kết quả
+        ket_qua = []
+        
+        # Xử lý từng người
+        for idx, nguoi in enumerate(ket_qua_nguoi):
+            bbox = nguoi.get("bbox", [])
+            if len(bbox) != 4:
+                continue
+            
+            x1, y1, x2, y2 = map(int, bbox)
+            
+            # Nhận dạng giới tính
+            gioi_tinh_vi = nhan_dang.nhan_dang(anh, x1, y1, x2, y2)
+            
+            # Chuyển sang tiếng Anh
+            gioi_tinh_en = "male" if gioi_tinh_vi == "Nam" else "female"
+            
+            # Độ tin cậy (ước lượng dựa trên bbox size)
+            bbox_area = (x2 - x1) * (y2 - y1)
+            confidence = min(0.95, 0.65 + (bbox_area / (anh.shape[0] * anh.shape[1])) * 0.3)
+            
+            ket_qua.append({
+                "person_id": idx + 1,
+                "gender": gioi_tinh_en,
+                "confidence": round(confidence, 2),
+                "bbox": [x1, y1, x2, y2]
+            })
+        
+        return ket_qua
+        
+    except Exception as e:
+        print(f"❌ Lỗi nhận dạng giới tính: {e}")
+        return []

@@ -158,3 +158,95 @@ class NhanDangThoiTiet:
         else:
             return "Ít màu sắc"
 
+
+# ============================================================================
+# FUNCTION CHO API - Wrapper để dễ sử dụng
+# ============================================================================
+
+def phan_tich_thoi_tiet(anh_path_or_array):
+    """
+    Phân tích thời tiết từ ảnh
+    
+    Args:
+        anh_path_or_array: Đường dẫn ảnh hoặc numpy array
+    
+    Returns:
+        dict: Kết quả phân tích thời tiết
+        {
+            "condition": "sunny" / "cloudy" / "rainy" / "dark" / ...,
+            "description": "Mô tả tiếng Việt",
+            "confidence": float,
+            "brightness": float,
+            "saturation": float
+        }
+    """
+    try:
+        # Load ảnh
+        if isinstance(anh_path_or_array, str):
+            anh = cv2.imread(anh_path_or_array)
+            if anh is None:
+                raise ValueError(f"Không thể đọc ảnh: {anh_path_or_array}")
+        else:
+            anh = anh_path_or_array
+        
+        # Khởi tạo module
+        nhan_dang = NhanDangThoiTiet()
+        
+        # Phân tích chi tiết
+        chi_tiet = nhan_dang.phan_tich_chi_tiet(anh)
+        
+        # Map thời tiết sang tiếng Anh
+        mau_thoi_tiet = {
+            "Nắng đẹp": "sunny",
+            "Trời xanh rất đẹp": "clear_sky",
+            "Sáng sủa": "bright",
+            "Nhiều mây": "cloudy",
+            "Trời nhiều mây": "cloudy",
+            "U ám": "overcast",
+            "Trời âm u": "overcast",
+            "Sương mù": "foggy",
+            "Tối": "dark",
+            "Rất tối": "very_dark",
+            "buổi tối": "evening",
+            "trong nhà": "indoor"
+        }
+        
+        # Tìm condition phù hợp
+        mo_ta_vi = chi_tiet['thoi_tiet']
+        condition = "unknown"
+        for key, value in mau_thoi_tiet.items():
+            if key.lower() in mo_ta_vi.lower():
+                condition = value
+                break
+        
+        # Nếu không tìm thấy, dùng logic mặc định
+        if condition == "unknown":
+            if chi_tiet['do_sang'] > 180:
+                condition = "sunny"
+            elif chi_tiet['do_sang'] > 120:
+                condition = "cloudy"
+            elif chi_tiet['do_sang'] > 80:
+                condition = "overcast"
+            else:
+                condition = "dark"
+        
+        # Độ tin cậy
+        confidence = 0.80
+        
+        return {
+            "condition": condition,
+            "description": mo_ta_vi,
+            "confidence": round(confidence, 2),
+            "brightness": chi_tiet['do_sang'],
+            "saturation": chi_tiet['do_bao_hoa']
+        }
+        
+    except Exception as e:
+        print(f"❌ Lỗi phân tích thời tiết: {e}")
+        return {
+            "condition": "unknown",
+            "description": "Không xác định",
+            "confidence": 0.0,
+            "brightness": 0,
+            "saturation": 0
+        }

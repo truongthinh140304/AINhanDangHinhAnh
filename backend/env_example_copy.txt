@@ -1,0 +1,84 @@
+# ========================================
+# DATABASE CONFIGURATION
+# ========================================
+
+# PostgreSQL Connection URL
+# Format: postgresql://username:password@host:port/database_name
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nhandanghinhanh
+
+# Individual Database Settings (optional, nếu không dùng DATABASE_URL)
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=nhandanghinhanh
+DB_USER=postgres
+DB_PASSWORD=postgres
+
+# ========================================
+# APPLICATION SETTINGS
+# ========================================
+
+# Environment: development, production
+ENVIRONMENT=development
+
+# Server settings
+HOST=0.0.0.0
+PORT=8000
+
+# ========================================
+# SECURITY (for production)
+# ========================================
+
+# Secret key for JWT tokens (generate random string)
+SECRET_KEY=your-secret-key-here-change-in-production
+
+# CORS Origins (comma separated)
+CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+
+# ========================================
+# FILE UPLOAD SETTINGS
+# ========================================
+
+# Upload directory
+UPLOAD_DIR=uploads
+
+# Max file size (MB)
+MAX_FILE_SIZE_MB=10
+
+# Allowed file extensions
+ALLOWED_EXTENSIONS=jpg,jpeg,png,gif,bmp
+
+# ========================================
+# AI/ML MODEL SETTINGS
+# ========================================
+
+# YOLOv8 model path
+YOLO_MODEL_PATH=yolov8n.pt
+
+# Model confidence threshold
+MODEL_CONFIDENCE_THRESHOLD=0.5
+
+# ========================================
+# LOGGING
+# ========================================
+
+# Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_LEVEL=INFO
+
+# Log file path
+LOG_FILE=logs/app.log
+
+# ========================================
+# INSTRUCTIONS
+# ========================================
+
+# 1. Rename this file to .env:
+#    ren env_example_copy.txt .env (Windows)
+#    mv env_example_copy.txt .env (Mac/Linux)
+#
+# 2. Update DATABASE_URL with your PostgreSQL credentials
+#    Change "postgres:postgres" to "postgres:YOUR_PASSWORD"
+#
+# 3. Change SECRET_KEY in production
+#
+# 4. Never commit .env to version control!
+

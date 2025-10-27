@@ -71,41 +71,83 @@ class ResultScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Giới tính
+                // Giới tính + vật dụng trên tay theo từng người
                 if (result.genders.isNotEmpty) ...[
                   _buildSection(
                     icon: Icons.people,
                     title: 'Giới Tính',
                     content: Column(
                       children: result.genders.map((gender) {
-                        return ListTile(
-                          leading: Icon(
-                            gender.gender == 'Nam' ? Icons.man : Icons.woman,
-                            color: gender.gender == 'Nam'
-                                ? Colors.blue
-                                : Colors.pink,
-                          ),
-                          title: Text(
-                              'Người ${gender.personId}: ${gender.gender}'),
-                          trailing: Text(
-                            '${(gender.confidence * 100).toStringAsFixed(0)}%',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
+                        const double threshold = 0.6; // 60% trở lên mới hiển thị
+                        final bool lowConfidence = gender.confidence < threshold;
+                        final String displayLabel = lowConfidence
+                            ? 'Không xác định'
+                            : gender.gender;
+                        final IconData icon = lowConfidence
+                            ? Icons.help_outline
+                            : (gender.gender == 'Nam' ? Icons.man : Icons.woman);
+                        final Color iconColor = lowConfidence
+                            ? Colors.grey
+                            : (gender.gender == 'Nam' ? Colors.blue : Colors.pink);
+
+                        final hasItems = gender.carriedItems.isNotEmpty;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              leading: Icon(icon, color: iconColor),
+                              title: Text('Người ${gender.personId}: $displayLabel'),
+                              subtitle: lowConfidence
+                                  ? const Text('Độ tin cậy thấp')
+                                  : null,
+                              trailing: Text(
+                                '${(gender.confidence * 100).toStringAsFixed(0)}%',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (hasItems)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 56, right: 8, bottom: 8),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: gender.carriedItems.map((item) {
+                                    return Chip(
+                                      avatar: const Icon(Icons.shopping_bag, size: 18),
+                                      label: Text(item.label),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                          ],
                         );
                       }).toList(),
                     ),
                   ),
                 ],
 
-                // Màu áo
+                // Màu áo theo từng người (dựa trên personId)
                 if (result.colors.isNotEmpty) ...[
                   _buildSection(
                     icon: Icons.palette,
                     title: 'Màu Áo',
                     content: Column(
-                      children: result.colors.map((color) {
+                      children: result.genders.map((g) {
+                        final personColors = result.colors
+                            .where((c) => c.personId == g.personId)
+                            .toList();
+                        if (personColors.isEmpty) {
+                          return ListTile(
+                            leading: const Icon(Icons.palette_outlined, color: Colors.grey),
+                            title: Text('Người ${g.personId}: Không xác định'),
+                          );
+                        }
+                        // Chọn màu có confidence cao nhất
+                        personColors.sort((a, b) => b.confidence.compareTo(a.confidence));
+                        final color = personColors.first;
                         return ListTile(
                           leading: Container(
                             width: 40,
@@ -116,8 +158,7 @@ class ResultScreen extends StatelessWidget {
                               border: Border.all(color: Colors.grey),
                             ),
                           ),
-                          title:
-                              Text('Người ${color.personId}: ${color.color}'),
+                          title: Text('Người ${g.personId}: ${color.color}'),
                           trailing: Text(
                             '${(color.confidence * 100).toStringAsFixed(0)}%',
                             style: const TextStyle(

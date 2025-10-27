@@ -69,18 +69,24 @@ class Gender {
   final int personId;
   final String gender;
   final double confidence;
+  final List<CarriedItem> carriedItems;
 
   Gender({
     required this.personId,
     required this.gender,
     required this.confidence,
+    required this.carriedItems,
   });
 
   factory Gender.fromJson(Map<String, dynamic> json) {
     return Gender(
       personId: json['person_id'] ?? 0,
-      gender: json['gender'] ?? 'Không xác định',
+      gender: Gender._normalizeGenderLabel((json['gender'] ?? '').toString()),
       confidence: (json['confidence'] ?? 0).toDouble(),
+      carriedItems: (json['carried_items'] as List?)
+              ?.map((e) => CarriedItem.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -89,6 +95,65 @@ class Gender {
       'person_id': personId,
       'gender': gender,
       'confidence': confidence,
+      'carried_items': carriedItems.map((e) => e.toJson()).toList(),
+    };
+  }
+
+  // Chuẩn hóa nhãn giới tính từ Backend về 'Nam' / 'Nữ' / 'Không xác định'
+  static String _normalizeGenderLabel(String raw) {
+    final value = raw.trim().toLowerCase();
+
+    const maleLabels = {
+      'nam', 'male', 'man', 'm', 'boy', 'anh', 'đàn ông', 'dan ong'
+    };
+    const femaleLabels = {
+      'nữ', 'nu', 'female', 'woman', 'f', 'girl', 'chị', 'phụ nữ', 'phu nu'
+    };
+
+    if (maleLabels.contains(value)) return 'Nam';
+    if (femaleLabels.contains(value)) return 'Nữ';
+
+    // Thử khớp chứa từ khóa phổ biến
+    if (value.contains('male') || value.contains('man')) return 'Nam';
+    if (value.contains('female') || value.contains('woman')) return 'Nữ';
+
+    return 'Không xác định';
+  }
+}
+
+/// Vật dụng cầm theo của từng người (gắn trong đối tượng Gender)
+class CarriedItem {
+  final String label; // Tên tiếng Việt nếu có, fallback tên class tiếng Anh
+  final String? objectClass; // Tên class tiếng Anh gốc
+  final double confidence;
+  final List<int>? bbox; // [x1,y1,x2,y2]
+
+  CarriedItem({
+    required this.label,
+    this.objectClass,
+    required this.confidence,
+    this.bbox,
+  });
+
+  factory CarriedItem.fromJson(Map<String, dynamic> json) {
+    final String labelVi = (json['ten_tieng_viet'] ?? '').toString().trim();
+    final String cls = (json['object_class'] ?? '').toString().trim();
+    return CarriedItem(
+      label: labelVi.isNotEmpty ? labelVi : (cls.isNotEmpty ? cls : 'Không xác định'),
+      objectClass: cls.isNotEmpty ? cls : null,
+      confidence: (json['confidence'] ?? 0).toDouble(),
+      bbox: (json['bbox'] is List)
+          ? List<int>.from((json['bbox'] as List).where((v) => v is num).map((v) => (v as num).toInt()))
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'label': label,
+      'object_class': objectClass,
+      'confidence': confidence,
+      'bbox': bbox,
     };
   }
 }

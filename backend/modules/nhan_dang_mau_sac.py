@@ -39,21 +39,61 @@ class NhanDangMauSac:
             str: Tên màu tiếng Việt
         """
         try:
-            # Crop vùng thân trên (30-60% chiều cao từ trên xuống)
+            # Crop vùng thân trên (20-65% chiều cao) và thu hẹp theo chiều ngang 5%
             chieu_cao = y2 - y1
-            y_bat_dau = y1 + int(chieu_cao * 0.3)
-            y_ket_thuc = y1 + int(chieu_cao * 0.6)
+            chieu_rong = x2 - x1
+            y_bat_dau = y1 + int(chieu_cao * 0.18)
+            y_ket_thuc = y1 + int(chieu_cao * 0.70)
+            x_bat_dau = x1 + int(chieu_rong * 0.05)
+            x_ket_thuc = x2 - int(chieu_rong * 0.05)
             
-            vung_ao = anh[y_bat_dau:y_ket_thuc, x1:x2]
+            vung_ao = anh[y_bat_dau:y_ket_thuc, x_bat_dau:x_ket_thuc]
             
             if vung_ao.size == 0:
                 return "Không xác định"
                 
             # Chuyển sang HSV
-            vung_ao_hsv = cv2.cvtColor(vung_ao, cv2.COLOR_BGR2HSV)
-            
-            # Reshape để clustering
-            pixels = vung_ao_hsv.reshape(-1, 3)
+            vung_ao = cv2.GaussianBlur(vung_ao, (5, 5), 0)
+            hsv = cv2.cvtColor(vung_ao, cv2.COLOR_BGR2HSV)
+
+            # Tạo mask loại bỏ da và nền quá tối/sáng
+            # Mask bão hòa trung bình (lọc nền xám/trắng/đen)
+            mask_sat = (hsv[:, :, 1] > 20).astype(np.uint8)
+
+            # Loại bỏ rất tối/rất sáng
+            mask_val = ((hsv[:, :, 2] > 35) & (hsv[:, :, 2] < 250)).astype(np.uint8)
+
+            # Mask da (HSV range) + (YCrCb)
+            ycrcb = cv2.cvtColor(vung_ao, cv2.COLOR_BGR2YCrCb)
+            cr = ycrcb[:, :, 1]
+            cb = ycrcb[:, :, 2]
+            mask_skin_ycrcb = ((cr > 135) & (cr < 180) & (cb > 85) & (cb < 135)).astype(np.uint8)
+
+            h = hsv[:, :, 0]
+            s = hsv[:, :, 1]
+            v = hsv[:, :, 2]
+            mask_skin_hsv = (((h < 25) | (h > 160)) & (s > 25) & (v > 45) & (v < 255)).astype(np.uint8)
+
+            # Chỉ coi là da khi cả 2 không gian đồng ý (giảm loại nhầm vải màu)
+            mask_not_skin = (1 - np.clip(mask_skin_ycrcb & mask_skin_hsv, 0, 1)).astype(np.uint8)
+
+            # Hợp nhất mask + xử lý hình thái học để loại nhiễu
+            mask = (mask_sat & mask_val & mask_not_skin).astype(np.uint8) * 255
+            kernel = np.ones((3, 3), np.uint8)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+            if np.count_nonzero(mask) < 100:  # quá ít pixel hợp lệ, fallback
+                mask = None
+
+            # Lấy pixel theo mask để clustering
+            if mask is not None:
+                masked_hsv = hsv[mask > 0]
+                if masked_hsv.size < 30:
+                    pixels = hsv.reshape(-1, 3)
+                else:
+                    pixels = masked_hsv.reshape(-1, 3)
+            else:
+                pixels = hsv.reshape(-1, 3)
             
             # K-means để tìm màu chủ đạo
             kmeans = KMeans(n_clusters=self.so_cum, random_state=42, n_init=10)
@@ -62,7 +102,7 @@ class NhanDangMauSac:
             # Lấy màu có số lượng pixel nhiều nhất
             labels = kmeans.labels_
             counts = np.bincount(labels)
-            mau_chu_dao_idx = np.argmax(counts)
+            mau_chu_dao_idx = int(np.argmax(counts))
             mau_chu_dao = kmeans.cluster_centers_[mau_chu_dao_idx]
             
             # Chuyển về tên màu tiếng Việt
@@ -72,6 +112,63 @@ class NhanDangMauSac:
         except Exception as e:
             print(f"Lỗi nhận dạng màu: {e}")
             return "Không xác định"
+
+    def nhan_dang_mau_ao_chi_tiet(self, anh, x1, y1, x2, y2):
+        """
+        Nhận dạng màu áo và trả thêm độ tin cậy (tỉ lệ cụm lớn nhất)
+        Returns: (ten_mau, confidence)
+        """
+        try:
+            chieu_cao = y2 - y1
+            chieu_rong = x2 - x1
+            y_bat_dau = y1 + int(chieu_cao * 0.18)
+            y_ket_thuc = y1 + int(chieu_cao * 0.70)
+            x_bat_dau = x1 + int(chieu_rong * 0.05)
+            x_ket_thuc = x2 - int(chieu_rong * 0.05)
+            vung_ao = anh[y_bat_dau:y_ket_thuc, x_bat_dau:x_ket_thuc]
+
+            if vung_ao.size == 0:
+                return "Không xác định", 0.3
+
+            vung_ao = cv2.GaussianBlur(vung_ao, (5, 5), 0)
+            hsv = cv2.cvtColor(vung_ao, cv2.COLOR_BGR2HSV)
+
+            mask_sat = (hsv[:, :, 1] > 20).astype(np.uint8)
+            mask_val = ((hsv[:, :, 2] > 35) & (hsv[:, :, 2] < 250)).astype(np.uint8)
+            ycrcb = cv2.cvtColor(vung_ao, cv2.COLOR_BGR2YCrCb)
+            cr = ycrcb[:, :, 1]
+            cb = ycrcb[:, :, 2]
+            mask_skin_ycrcb = ((cr > 135) & (cr < 180) & (cb > 85) & (cb < 135)).astype(np.uint8)
+            h = hsv[:, :, 0]
+            s = hsv[:, :, 1]
+            v = hsv[:, :, 2]
+            mask_skin_hsv = (((h < 25) | (h > 160)) & (s > 25) & (v > 45) & (v < 255)).astype(np.uint8)
+            mask_not_skin = (1 - np.clip(mask_skin_ycrcb & mask_skin_hsv, 0, 1)).astype(np.uint8)
+            mask = (mask_sat & mask_val & mask_not_skin).astype(np.uint8) * 255
+            kernel = np.ones((3, 3), np.uint8)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+
+            if np.count_nonzero(mask) >= 100:
+                pixels = hsv[mask > 0]
+            else:
+                pixels = hsv.reshape(-1, 3)
+
+            if pixels.size < 30:
+                return "Không xác định", 0.3
+
+            kmeans = KMeans(n_clusters=self.so_cum, random_state=42, n_init=10)
+            kmeans.fit(pixels)
+            labels = kmeans.labels_
+            counts = np.bincount(labels)
+            mau_chu_dao_idx = int(np.argmax(counts))
+            mau_chu_dao = kmeans.cluster_centers_[mau_chu_dao_idx]
+            ten_mau = self.chuyen_hsv_sang_ten_mau(mau_chu_dao)
+            confidence = float(np.max(counts) / np.sum(counts)) if np.sum(counts) > 0 else 0.3
+            return ten_mau, max(0.3, min(0.95, confidence))
+        except Exception as e:
+            print(f"Lỗi nhận dạng màu chi tiết: {e}")
+            return "Không xác định", 0.3
             
     def chuyen_hsv_sang_ten_mau(self, hsv):
         """
@@ -95,6 +192,14 @@ class NhanDangMauSac:
                 return "Xám"
             else:
                 return "Trắng"
+        
+        # Một số quy tắc tinh chỉnh trước khi phân loại theo Hue
+        # Nâu: vùng cam nhưng tối (đậm)
+        if 10 <= h < 25 and v < 140:
+            return "Nâu"
+        # Xanh navy: xanh dương nhưng tối
+        if 100 <= h < 130 and v < 80:
+            return "Xanh navy"
         
         # Phân loại màu dựa trên Hue
         if h < 10 or h > 170:
@@ -128,6 +233,8 @@ class NhanDangMauSac:
             'Vàng': (255, 255, 0),
             'Xanh lá': (0, 255, 0),
             'Xanh dương': (0, 0, 255),
+            'Xanh navy': (0, 0, 128),
+            'Nâu': (150, 75, 0),
             'Tím': (128, 0, 128),
             'Hồng': (255, 192, 203),
             'Trắng': (255, 255, 255),
@@ -205,15 +312,15 @@ def nhan_dang_mau_ao(anh_path_or_array, ket_qua_nguoi):
             
             x1, y1, x2, y2 = map(int, bbox)
             
-            # Nhận dạng màu
-            ten_mau = nhan_dang.nhan_dang_mau_ao(anh, x1, y1, x2, y2)
+            # Nhận dạng màu + confidence cụ thể
+            ten_mau, conf = nhan_dang.nhan_dang_mau_ao_chi_tiet(anh, x1, y1, x2, y2)
             rgb = nhan_dang.lay_mau_rgb(ten_mau)
             
             # Convert RGB to HEX
             hex_color = "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
             
-            # Độ tin cậy (ước lượng)
-            confidence = 0.85 if ten_mau != "Không xác định" else 0.3
+            # Độ tin cậy từ tỉ lệ cụm lớn nhất
+            confidence = conf if ten_mau != "Không xác định" else 0.3
             
             ket_qua.append({
                 "person_id": idx + 1,
